@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Linimate a Union Flag (sort of)</title>
+		
+		<link href="style.css" rel="stylesheet" />
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+		<script src="jquery.linimate.js"></script>
+	</head>
+	
+	<body>
+		<canvas id="flag" width="688" height="340" style="background: #072765; margin: 0 auto 0 auto; display: block;"></canvas>
+		
+		<script>
+			$(document).ready(
+				function() {
+					$('#flag').linimate(
+						{
+							lines: [
+								{	/* White vertical line */
+									poly: [
+										[344, 0],
+										[344, 340]
+									],
+									duration: 250,
+									colour: '#fff',
+									thickness: 120
+								},
+								{	/* White diagonal line (left to right) */
+									poly: [
+										[0, 0],
+										[688, 340]
+									],
+									duration: 250,
+									colour: '#fff',
+									thickness: 80,
+									start: 125
+								},
+								{	/* White diagonal line (right to left) */	
+									poly: [
+										[688, 0],
+										[0, 340]
+									],
+									duration: 250,
+									colour: '#fff',
+									thickness: 80,
+									start: 125
+								},
+								{	/* Red diagonal line (left to right) */
+									poly: [
+										[0, 0],
+										[688, 340]
+									],
+									duration: 250,
+									colour: '#C32C27',
+									thickness: 30,
+									start: 250
+								},
+								{	/* Red diagonal line (right to left) */
+									poly: [
+										[688, 0],
+										[0, 340]
+									],
+									duration: 250,
+									colour: '#C32C27',
+									thickness: 30,
+									start: 250
+								},
+								{	/* White horizontal line */
+									poly: [
+										[0, 170],
+										[688, 170]
+									],
+									duration: 125,
+									colour: '#fff',
+									thickness: 120,
+									start: 375
+								},
+								{	/* Red horizontal line */
+									poly: [
+										[0, 170],
+										[688, 170]
+									],
+									duration: 125,
+									colour: '#C32C27',
+									thickness: 80,
+									start: 400
+								},
+								{	/* Red vertical line */
+									poly: [
+										[344, 0],
+										[344, 340]
+									],
+									duration: 125,
+									colour: '#C32C27',
+									thickness: 80,
+									start: 425
+								}
+							],
+							fps: 5
+						},
+						function() {
+							alert('Finished animating');
+						}
+					);
+				}
+			);
+		</script>
+	</body>
+</html>
