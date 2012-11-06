@@ -1,3 +1,45 @@
+CanvasRenderingContext2D.prototype.dashedLineTo = function (fromX, fromY, toX, toY, pattern) {
+	var lt = function (a, b) { return a <= b; };
+	var gt = function (a, b) { return a >= b; };
+	var capmin = function (a, b) { return Math.min(a, b); };
+	var capmax = function (a, b) { return Math.max(a, b); };
+	
+	var checkX = { thereYet: gt, cap: capmin };
+	var checkY = { thereYet: gt, cap: capmin };
+	
+	if (fromY - toY > 0) {
+		checkY.thereYet = lt;
+		checkY.cap = capmax;
+	}
+	
+	if (fromX - toX > 0) {
+		checkX.thereYet = lt;
+		checkX.cap = capmax;
+	}
+	
+	this.moveTo(fromX, fromY);
+	var offsetX = fromX;
+	var offsetY = fromY;
+	var idx = 0, dash = true;
+	
+	while (!(checkX.thereYet(offsetX, toX) && checkY.thereYet(offsetY, toY))) {
+		var ang = Math.atan2(toY - fromY, toX - fromX);
+		var len = pattern[idx];
+		
+		offsetX = checkX.cap(toX, offsetX + (Math.cos(ang) * len));
+		offsetY = checkY.cap(toY, offsetY + (Math.sin(ang) * len));
+		
+		if (dash) {
+			this.lineTo(offsetX, offsetY);
+		} else {
+			this.moveTo(offsetX, offsetY);
+		}
+		
+		idx = (idx + 1) % pattern.length;
+		dash = !dash;
+	}
+};
+
 $.fn.linimate = function(options, callback) {
 	var FPS = options.fps != undefined ? options.fps : 30;
 	var framesElapsed = 0;
@@ -8,6 +50,7 @@ $.fn.linimate = function(options, callback) {
 	
 	function prepareFrame() {
 		var line, start, end, duration, contX, contY, cont;
+		var incX, incY;
 		
 		cont = 0;
 		paintTimeout = setTimeout(prepareFrame, FPS);
@@ -35,11 +78,15 @@ $.fn.linimate = function(options, callback) {
 			
 			if(line.pos == undefined) {
 				line.pos = [start[0], start[1]];
+				incX = 0;
+				incY = 0;
 			} else {
-				duration = line.duration;
+				duration = parseFloat(line.duration);
+				incX = (parseFloat(end[0]) - parseFloat(start[0])) / duration;
+				incY = (parseFloat(end[1]) - parseFloat(start[1])) / duration;
 				
-				line.pos[0] += (end[0] - start[0]) / duration;
-				line.pos[1] += (end[1] - start[1]) / duration;
+				line.pos[0] += incX;
+				line.pos[1] += incY;
 			}
 			
 			contX = false;
@@ -82,7 +129,7 @@ $.fn.linimate = function(options, callback) {
 	}
 	
 	function paintFrame() {
-		var line, point, start, end;
+		var line, pattern, point, start, end;
 		
 		context.clearRect(0, 0, canvas.width, canvas.height);
 		
@@ -93,13 +140,18 @@ $.fn.linimate = function(options, callback) {
 				continue;
 			}
 			
+			if(line.pattern != undefined) {
+				pattern = line.pattern;
+			} else {
+				pattern = [1];
+			}
+			
 			for(var p = 1; p <= line.polyPoint; p ++) {
 				start = line.poly[p - 1];
 				end = line.poly[p];
 				
 				context.beginPath();
-				context.moveTo(start[0], start[1]);
-				context.lineTo(end[0], end[1]);
+				context.dashedLineTo(start[0], start[1], end[0], end[1], pattern);
 				
 				if(line.colour != undefined) {
 					context.strokeStyle = line.colour;
@@ -113,10 +165,8 @@ $.fn.linimate = function(options, callback) {
 			}
 			
 			point = line.poly[line.polyPoint];
-			
 			context.beginPath();
-			context.moveTo(point[0], point[1]);
-			context.lineTo(line.pos[0], line.pos[1]);
+			context.dashedLineTo(point[0], point[1], line.pos[0], line.pos[1], pattern);
 			
 			if(line.colour != undefined) {
 				context.strokeStyle = line.colour;
